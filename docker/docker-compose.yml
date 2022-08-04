@@ -1,7 +1,7 @@
 version: '2.1'
 services:
   database:
-    image: shichoc/mysqlshop
+    image: bug00126/mysqlshop
     container_name: database
     environment:
       MYSQL_ROOT_PASSWORD: "passwd"
@@ -14,7 +14,7 @@ services:
       timeout: 20s
       retries: 10
   myapp:
-    image: shichoc/simpleshopmysql:0.0.1-SNAPSHOT
+    image: bug00126/simpleshopmysql:0.0.1-SNAPSHOT
     container_name: simpleshopapp
     ports:
       - "8080:8080"

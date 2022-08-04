@@ -7,6 +7,7 @@ import com.example.simpleshopmysql.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import javax.servlet.http.HttpSession;
 
 import java.util.List;
 
@@ -17,9 +18,10 @@ public class OrderController {
     private OrderService orderService;
 
     @RequestMapping(value="/order",method = RequestMethod.GET)
-    public ResponseEntity<List<SaleOrder>> getAllOrders() {
+    public ResponseEntity<List<SaleOrder>> getAllOrders(HttpSession session) {
         try {
-            List<SaleOrder> orders = orderService.getAllOrders();
+            List<SaleOrder> orders = orderService.getAllOrders(session);
+            //List<SaleOrder> orders = (LIST<SaleOrder>)session.getAttribute("order_list");
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -27,9 +29,11 @@ public class OrderController {
     }
 
     @RequestMapping(value="/order",method = RequestMethod.POST)
-    public ResponseEntity<SaleOrder> createOrders(@RequestBody SaleOrder saleOrder) {
+    public ResponseEntity<SaleOrder> createOrders(@RequestBody SaleOrder saleOrder, HttpSession session) {
         try {
-            SaleOrder generatedOrder = orderService.createOrders(saleOrder);
+            //List<SaleOrder> orders = (LIST<SaleOrder>)session.getAttribute("order_list");
+            SaleOrder generatedOrder = orderService.createOrders(saleOrder, session);
+	    //session.setAttribute("order_list", orders.add(generatedOrder));
             return ResponseEntity.ok(generatedOrder);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -37,9 +41,11 @@ public class OrderController {
     }
 
     @RequestMapping(value="/order/{orderid}", method = RequestMethod.GET)
-    public ResponseEntity<SaleOrder> getOrder(@PathVariable("orderid") Integer orderid) {
+    public ResponseEntity<SaleOrder> getOrder(@PathVariable("orderid") Integer orderid, HttpSession session) {
         try {
-            SaleOrder order = orderService.getOrder(orderid);
+            //System.out.println(session);	
+            SaleOrder order = orderService.getOrder(orderid, session);
+            //SaleOrder order = (SaleOrder) session.getAttribute("order");
             if(order!=null)
                 return ResponseEntity.ok(order);
             else
@@ -50,9 +56,9 @@ public class OrderController {
     }
 
     @RequestMapping(value="/order/{orderid}", method = RequestMethod.POST)
-    public ResponseEntity<LineItem> createOrderLineItem(@PathVariable("orderid") Integer orderid, @RequestBody LineItem lineItem) {
+    public ResponseEntity<LineItem> createOrderLineItem(@PathVariable("orderid") Integer orderid, @RequestBody LineItem lineItem,HttpSession session) {
         try {
-            LineItem savedLineItem = orderService.createOrderLineItem(orderid,lineItem);
+            LineItem savedLineItem = orderService.createOrderLineItem(orderid,lineItem,session);
             return ResponseEntity.ok(savedLineItem);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -60,9 +66,9 @@ public class OrderController {
     }
 
     @RequestMapping(value="/order/{orderid}", method = RequestMethod.DELETE)
-    public ResponseEntity<MessageResponse> deleteOrder(@PathVariable("orderid") Integer orderid) {
+    public ResponseEntity<MessageResponse> deleteOrder(@PathVariable("orderid") Integer orderid, HttpSession session) {
         try {
-            orderService.deleteOrder(orderid);
+            orderService.deleteOrder(orderid, session);
             return ResponseEntity.ok(new MessageResponse(200,"delete order success"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -71,9 +77,9 @@ public class OrderController {
 
 
     @RequestMapping(value="/order/{orderid}/{lineitemid}", method = RequestMethod.DELETE)
-    public ResponseEntity<MessageResponse> deleteOrderLineItem(@PathVariable("orderid") Integer orderid, @PathVariable("lineitemid") Integer lineitemid) {
+    public ResponseEntity<MessageResponse> deleteOrderLineItem(@PathVariable("orderid") Integer orderid, @PathVariable("lineitemid") Integer lineitemid, HttpSession session) {
         try {
-            orderService.deleteOrderLineItem(orderid,lineitemid);
+            orderService.deleteOrderLineItem(orderid,lineitemid,session);
             return ResponseEntity.ok(new MessageResponse(200,"delete lineitem success"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -81,9 +87,9 @@ public class OrderController {
     }
 
     @RequestMapping(value="/order/{orderid}/checkout", method = RequestMethod.POST)
-    public ResponseEntity<MessageResponse> checkout(@PathVariable("orderid") Integer orderid) {
+    public ResponseEntity<MessageResponse> checkout(@PathVariable("orderid") Integer orderid, HttpSession session) {
         try {
-            int state = orderService.checkout(orderid);
+            int state = orderService.checkout(orderid,session);
             if(state==1)
                 return ResponseEntity.ok(new MessageResponse(200,"checkouted"));
             else if(state==0)

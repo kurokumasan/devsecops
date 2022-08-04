@@ -15,7 +15,7 @@
     <description>SimpleShopMySQL</description>
     <properties>
         <java.version>11</java.version>
-        <docker.image.prefix>shichoc</docker.image.prefix>
+        <docker.image.prefix>bug00126</docker.image.prefix>
     </properties>
     <dependencies>
         <dependency>
