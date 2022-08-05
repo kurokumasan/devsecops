@@ -30,6 +30,7 @@ public class OrderService {
     private ProductRepository productRepository;
 
     private Integer orderid;
+    private Integer lineitemid;
 
     public List<SaleOrder> getAllOrders(HttpSession session) {
         //List<SaleOrder> orders= saleOrderRepository.findAll();
@@ -38,6 +39,7 @@ public class OrderService {
 	    //List<SaleOrder> orders = new ArrayList<SaleOrder>();
 	    session.setAttribute("order_list", orders);
 	    orderid = 0;
+        lineitemid = 0;
 	} else { /*List<SaleOrder>*/ orders = (List<SaleOrder>) session.getAttribute("order_list"); }
         return orders;
     }
@@ -81,17 +83,25 @@ public class OrderService {
         if(lineItem.getQuantity()>product.getQuantity())
             throw new RuntimeException("no inventory");
         //lineItem.setSaleOrder(temporaryorder.get());
-        lineItem.setSaleOrder(temporaryorder);
-        LineItem savedLineItem = lineItemRepository.save(lineItem);
-        return savedLineItem;
+//        lineItem.setSaleOrder(temporaryorder);
+//        LineItem savedLineItem = lineItemRepository.save(lineItem);
+//        return savedLineItem;
+        List<SaleOrder> orders = (List<SaleOrder>) session.getAttribute("order_list");
+        orders.remove(temporaryorder);
+        List<LineItem> items = temporaryorder.getLineItems();
+        lineItem.setLid(++lineitemid);
+        items.add(lineItem);
+        orders.add(temporaryorder);
+        session.setAttribute("order_list", temporaryorder);
+        return lineItem;
     }
 
     public void deleteOrder(Integer orderid, HttpSession session) {
         //if(saleOrderRepository.existsById(orderid))
         //    saleOrderRepository.deleteById(orderid);
         List<SaleOrder> orders = (List<SaleOrder>) session.getAttribute("order_list");
-	for (SaleOrder order : orders) {
-	    if (order.getIid()==orderid) {
+	    for (SaleOrder order : orders) {
+	        if (order.getIid()==orderid) {
                 orders.remove(order);
 	        session.setAttribute("order_list", orders);
 		return;
@@ -104,11 +114,19 @@ public class OrderService {
         //if(saleOrderRepository.existsById(orderid))
         //    if(lineItemRepository.existsById(lineitemid))
         //        lineItemRepository.deleteById(lineitemid);
-	SaleOrder temporaryorder = this.getOrder(orderid, session);
-	if(temporaryorder!=null)
-            if(lineItemRepository.existsById(lineitemid))
-                lineItemRepository.deleteById(lineitemid);
-	    
+	    SaleOrder temporaryorder = this.getOrder(orderid, session);
+        List<SaleOrder> orders;
+	    if(temporaryorder!=null) {
+            orders = (List<SaleOrder>) session.getAttribute("order_list");
+            orders.remove(temporaryorder);
+            List<LineItem> items = temporaryorder.getLineItems();
+            for (LineItem item:items) {
+                if (item.getLid()==lineitemid)
+                    items.remove(item);
+            }
+            orders.add(temporaryorder);
+            session.setAttribute("order_list", temporaryorder);
+        }
     }
 
     public int checkout(Integer orderid, HttpSession session) {
